@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <input id="photosInput" multiple type="file" accept="image/*" />
+    <input id="keyWordInput" placeholder="Ключевое слово" />
+    <a id="donwloadLink" hidden download></a>
+    <button id="encodeButton">Закодировать</button>
+    <ul id="encryptedOutput"></ul>
+    <input id="decodeStringInput" placeholder="Строка для декодирования" />
+    <input id="keyWordDecodeInput" placeholder="Ключевое слово" />
+    <button id="decodeButton">Декодировать</button>
+    <img id="decodedImage" />
+
+    <script>
+      const showEncryptResults = (encryptedFiles) => {
+        encryptedOutput.replaceChildren();
+
+        encryptedFiles.forEach((crypt, index) => {
+          const listItem = document.createElement("li");
+          listItem.textContent = `Сохранить фото ${index + 1}`;
+          listItem.addEventListener("click", (e) => {
+            const txtBlob = new Blob([crypt], { type: "text/plain" });
+            donwloadLink.href = URL.createObjectURL(txtBlob);
+            donwloadLink.download = `Фото ${index + 1}.txt`;
+            donwloadLink.click();
+          });
+
+          encryptedOutput.appendChild(listItem);
+        });
+      };
+
+      const encryptFiles = async (files, keyWord) => {
+        if (!files.length || !keyWord) return;
+
+        const filesEncoded = await Promise.all(
+          [...files].map(
+            (file) =>
+              new Promise((resolve) => {
+                const fileReader = new FileReader();
+
+                fileReader.onload = () => resolve(fileReader.result);
+                fileReader.readAsDataURL(file);
+              })
+          )
+        );
+
+        const keyWordReversed = keyWord.split("").reverse().join("");
+        const keyCharCodes = keyWord
+          .split("")
+          .map((char, index) => keyWordReversed.charCodeAt(index));
+
+        const signedImages = filesEncoded.map((fileEncoded) => {
+          let fileLetters = fileEncoded.split("");
+
+          keyCharCodes.forEach(
+            (charCode, index) =>
+              (fileLetters = [
+                ...fileLetters.slice(0, charCode + index),
+                String.fromCharCode(charCode),
+                ...fileLetters.slice(charCode + index),
+              ])
+          );
+
+          return fileLetters.join("");
+        });
+
+        showEncryptResults(signedImages);
+      };
+
+      encodeButton.addEventListener("click", () => {
+        encryptFiles(photosInput.files, keyWordInput.value);
+      });
+
+      decodeButton.addEventListener("click", () => {
+        const keyWord = keyWordDecodeInput.value;
+
+        if (!keyWord || !decodeStringInput.value) return;
+
+        const keyWordReversed = keyWord.split("").reverse().join("");
+        const keyCharCodes = keyWord
+          .split("")
+          .map((char, index) => keyWordReversed.charCodeAt(index));
+
+        let imageLetters = decodeStringInput.value.split("");
+        keyCharCodes.forEach((charCode) => imageLetters.splice(charCode, 1));
+
+        const imageSrc = imageLetters.join("");
+
+        decodedImage.src = imageSrc;
+      });
+    </script>
+  </body>
+</html>
