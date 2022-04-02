@@ -17,17 +17,25 @@
     <img id="decodedImage" />
 
     <script>
+      const IS_FILE_DOWNLOAD = false;
+
       const showEncryptResults = (encryptedFiles) => {
         encryptedOutput.replaceChildren();
 
         encryptedFiles.forEach((crypt, index) => {
           const listItem = document.createElement("li");
-          listItem.textContent = `Сохранить фото ${index + 1}`;
+          listItem.textContent = `${
+            IS_FILE_DOWNLOAD ? "Сохранить" : "Скопировать"
+          } шифр ${index + 1}`;
           listItem.addEventListener("click", (e) => {
-            const txtBlob = new Blob([crypt], { type: "text/plain" });
-            donwloadLink.href = URL.createObjectURL(txtBlob);
-            donwloadLink.download = `Фото ${index + 1}.txt`;
-            donwloadLink.click();
+            if (IS_FILE_DOWNLOAD) {
+              const txtBlob = new Blob([crypt], { type: "text/plain" });
+              donwloadLink.href = URL.createObjectURL(txtBlob);
+              donwloadLink.download = `Фото ${index + 1}.txt`;
+              donwloadLink.click();
+            } else {
+              navigator.clipboard.writeText(crypt);
+            }
           });
 
           encryptedOutput.appendChild(listItem);
