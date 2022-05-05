@@ -6,7 +6,12 @@
     <title>Document</title>
   </head>
   <body>
-    <input id="photosInput" multiple type="file" accept="image/*" />
+    <div>
+      <input id="isVideoCheckbox" type="checkbox" /><label for="isVideoCheckbox"
+        >Видео</label
+      >
+    </div>
+    <input id="photosInput" multiple type="file" accept="image/*,video/*" />
     <input id="keyWordInput" placeholder="Ключевое слово" />
     <a id="donwloadLink" hidden download></a>
     <button id="encodeButton">Закодировать</button>
@@ -14,10 +19,12 @@
     <input id="decodeStringInput" placeholder="Строка для декодирования" />
     <input id="keyWordDecodeInput" placeholder="Ключевое слово" />
     <button id="decodeButton">Декодировать</button>
-    <img id="decodedImage" />
+    <img id="decodedImage" height="300px" width="300px" />
+    <video id="decodedVideo" height="300px" width="300px" autoplay></video>
 
     <script>
       const IS_FILE_DOWNLOAD = false;
+      let isVideo = false;
 
       const showEncryptResults = (encryptedFiles) => {
         encryptedOutput.replaceChildren();
@@ -80,6 +87,11 @@
         showEncryptResults(signedImages);
       };
 
+      isVideoCheckbox.addEventListener(
+        "change",
+        ({ target: { value } }) => (isVideo = !isVideo)
+      );
+
       encodeButton.addEventListener("click", () => {
         encryptFiles(photosInput.files, keyWordInput.value);
       });
@@ -99,7 +111,11 @@
 
         const imageSrc = imageLetters.join("");
 
-        decodedImage.src = imageSrc;
+        if (isVideo) {
+          decodedVideo.src = imageSrc
+        } else {
+          decodedImage.src = imageSrc;
+        }
       });
     </script>
   </body>
