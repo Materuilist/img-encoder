@@ -64,6 +64,11 @@
           )
         );
 
+        if(isVideo){
+          showEncryptResults(filesEncoded)
+          return 
+        }
+
         const keyWordReversed = keyWord.split("").reverse().join("");
         const keyCharCodes = keyWord
           .split("")
